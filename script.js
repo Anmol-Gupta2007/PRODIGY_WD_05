@@ -14,10 +14,9 @@ cityInput.addEventListener('input', (e) => {
     const query = e.target.value.trim();
     
     if (query.length > 2) {
-        // Wait 300ms after user stops typing to fetch cities (prevents API spam)
         debounceTimer = setTimeout(() => fetchCitySuggestions(query), 300);
     } else {
-        dataList.innerHTML = ''; // Clear suggestions if input is too short
+        dataList.innerHTML = '';
     }
 });
 
@@ -36,7 +35,6 @@ async function fetchCitySuggestions(query) {
                 
                 const option = document.createElement('option');
                 option.value = fullName;
-                // Store precise coordinates in the element so we don't have to search again
                 option.dataset.lat = city.latitude;
                 option.dataset.lon = city.longitude;
                 option.dataset.name = fullName;
@@ -96,9 +94,8 @@ function setBackground(type) {
 // Main Weather Fetch Logic
 async function fetchWeather(lat, lon, locationName) {
     try {
-        showMessage('Fetching accurate data...');
+        showMessage('Fetching current data...');
         
-        // Updated query for higher precision data
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,surface_pressure,wind_speed_10m&hourly=visibility,uv_index&timezone=auto`;
         const aqiUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&current=european_aqi`;
         
@@ -121,7 +118,7 @@ async function fetchWeather(lat, lon, locationName) {
         document.getElementById('temp').textContent = Math.round(current.temperature_2m);
         document.getElementById('weather-desc').textContent = condition.desc;
         
-        document.getElementById('humidity').textContent = `${current.relative_humidity_2m}%`;
+        document.getElementById('humidity').textContent = `${Math.round(current.relative_humidity_2m)}%`;
         document.getElementById('wind-speed').textContent = `${current.wind_speed_10m} km/h`;
         document.getElementById('pressure').textContent = `${current.surface_pressure} hPa`;
         document.getElementById('uv-index').textContent = uvIndex;
@@ -140,15 +137,12 @@ function handleSearch() {
     const inputValue = cityInput.value.trim();
     if (!inputValue) return;
 
-    // Check if the user selected an exact option from the dropdown
     const options = Array.from(dataList.options);
     const selectedOption = options.find(opt => opt.value === inputValue);
 
     if (selectedOption) {
-        // We already have the coordinates from the dropdown, skip geocoding
         fetchWeather(selectedOption.dataset.lat, selectedOption.dataset.lon, selectedOption.dataset.name);
     } else {
-        // Fallback: Perform a manual geocoding search
         searchCity(inputValue);
     }
 }
